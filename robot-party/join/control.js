@@ -9,6 +9,9 @@ var touchLastTime = 0;
 
 var lastStickTime = 0;
 
+var currentX = 0;
+var currentY = 0;
+
 function initStick() {
   // pass
 }
@@ -176,4 +179,12 @@ $(function() {
     }
     moveStick(currentKeyboardX, currentKeyboardY);
   });
+});
+
+$(()=>{
+  setInterval(() => {
+    if(dataChannel && dataChannel.readyState === "open") {
+      dataChannel.send(JSON.stringify({"stick": [currentX, currentY, Date.now()]}));
+    }
+  }, 100);
 });
