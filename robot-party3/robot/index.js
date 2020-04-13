@@ -36,9 +36,10 @@ $("#panelConfiguration-buttonSave").click(()=>{
   $("#panelConfiguration").hide();
 });
 
-let socket = io("https://botparty.dheera.net/");
-
-const droneRoomName = hash(roomName + "-" + passCode);
+// TODO: Replace with your own channel ID
+const drone = new ScaleDrone('yiS12Ts5RdNhebyM');
+// Room name needs to be prefixed with 'observable-'
+const droneRoomName = 'observable-' + hash(roomName + "-" + passCode);
 const configuration = {
   iceServers: [{
     urls: 'stun:stun.l.google.com:19302'
@@ -46,36 +47,87 @@ const configuration = {
 };
 let room;
 let peerConnection;
-let isOfferer = false;
+
 
 function onSuccess() {};
 function onError(error) {
   console.error(error);
 };
 
-socket.on('connect', ()=>{
-  socket.on(droneRoomName + '.members', members => {
+drone.on('open', error => {
+  if (error) {
+    return console.error(error);
+  }
+  room = drone.subscribe(droneRoomName);
+  room.on('open', error => {
+    if (error) {
+      onError(error);
+    }
+  });
+  // We're connected to the room and received an array of 'members'
+  // connected to the room (including us). Signaling server is ready.
+  room.on('members', members => {
     console.log('MEMBERS', members);
     // If we are the second user to connect to the room we will be creating the offer
-    // isOfferer = members.length === 2;
-
+    // const isOfferer = members.length === 2;
     const isOfferer = false;
     startWebRTC(isOfferer);
-    });
-
-    socket.emit("subscribe", droneRoomName);
+  });
 });
 
 // Send signaling data via Scaledrone
 function sendMessage(message) {
-  socket.emit('publish', {
-    roomName: droneRoomName,
-    message: message,
+  drone.publish({
+    room: droneRoomName,
+    message
   });
 }
 
 function startWebRTC(isOfferer) {
   peerConnection = new RTCPeerConnection(configuration);
+
+  var dataChannelOptions = {
+          ordered: false, //no guaranteed delivery, unreliable but faster
+          maxRetransmitTime: 1000, //milliseconds
+          negotiated: true,
+          id: 5,
+  };
+
+
+      dataChannel = peerConnection.createDataChannel("data", dataChannelOptions);
+      dataChannel.onopen = () => {
+        console.log("dataChannel.onopen");
+      };
+      dataChannel.onmessage = event => {
+        console.log(event);
+      };
+      dataChannel.onclose = () => {
+        console.log("dataChannel.onclose");
+      };
+
+
+
+/*
+  peerConnection.ondatachannel = event => {
+    // console.log("ondatachannel", event);
+    event.channel.onopen = () => {
+      console.log("dataChannel.onopen");
+    };
+    event.channel.onmessage = event => {
+      console.log("dataChannel.onmessage", event);
+      let message = JSON.parse(event.data);
+      if(message.stick) {
+        let linear = -message.stick[1];
+        let angular = -message.stick[0];
+        console.log("robot: linear=" + linear + " angular=" + angular);
+      }
+    };
+    event.channel.onclose = () => {
+      console.log("dataChannel.onclose");
+    };
+  };
+*/
+
 
   // 'onicecandidate' notifies us whenever an ICE agent needs to deliver a
   // message to the other peer through the signaling server
@@ -122,13 +174,12 @@ function startWebRTC(isOfferer) {
   }, onError);
 
   // Listen to signaling data from Scaledrone
-  socket.on(droneRoomName + '.message', (data) => {
+  room.on('data', (message, client) => {
+    //console.log("data:", message, client);
     // Message was sent by us
-    if (data.sender === socket.id) {
+    if (client.id === drone.clientId) {
       return;
     }
-
-    const message = data.message;
 
     if (message.sdp) {
       console.log("remoteDescription", message.sdp);
@@ -145,8 +196,6 @@ function startWebRTC(isOfferer) {
       peerConnection.addIceCandidate(
         new RTCIceCandidate(message.candidate), onSuccess, onError
       );
-    } else if (message.stick) {
-      console.log(message.stick);
     }
   });
 }

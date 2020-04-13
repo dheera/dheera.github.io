@@ -183,8 +183,8 @@ $(function() {
 
 $(()=>{
   setInterval(() => {
-    if(socket && socket.connected) {
-      sendMessage({"stick": [currentX, currentY, Date.now()]});
+    if(dataChannel && dataChannel.readyState === "open") {
+      dataChannel.send(JSON.stringify({"stick": [currentX, currentY, Date.now()]}));
     }
   }, 100);
 });
