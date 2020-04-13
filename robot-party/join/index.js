@@ -72,20 +72,20 @@ function startWebRTC(isOfferer) {
   var dataChannelOptions = {
           ordered: false, //no guaranteed delivery, unreliable but faster
           maxRetransmitTime: 1000, //milliseconds
-          negotiated: true,
-          id: 0,
+          //negotiated: true,
+          //id: 5,
   };
 
-  dataChannel = peerConnection.createDataChannel("data", dataChannelOptions);
-  dataChannel.onopen = () => {
-    console.log("dataChannel.onopen");
-  };
-  dataChannel.onmessage = event => {
-    console.log(event);
-  };
-  dataChannel.onclose = () => {
-    console.log("dataChannel.onclose");
-  };
+      dataChannel = peerConnection.createDataChannel("data", dataChannelOptions);
+      dataChannel.onopen = () => {
+        console.log("dataChannel.onopen");
+      };
+      dataChannel.onmessage = event => {
+        console.log(event);
+      };
+      dataChannel.onclose = () => {
+        console.log("dataChannel.onclose");
+      };
 
   // 'onicecandidate' notifies us whenever an ICE agent needs to deliver a
   // message to the other peer through the signaling server
@@ -100,7 +100,9 @@ function startWebRTC(isOfferer) {
   if (isOfferer) {
     peerConnection.onnegotiationneeded = () => {
       console.log("onnegotiationneeded");
-      peerConnection.createOffer().then(localDescCreated).catch(onError);
+      setTimeout(()=> {
+        peerConnection.createOffer().then(localDescCreated).catch(onError);
+      }, 1000);
     }
   }
 
@@ -121,6 +123,7 @@ function startWebRTC(isOfferer) {
     localVideo.srcObject = stream;
     // Add your stream to be sent to the conneting peer
     stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
+
   }, onError);
 
   // Listen to signaling data from Scaledrone

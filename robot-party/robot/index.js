@@ -89,22 +89,23 @@ function startWebRTC(isOfferer) {
   var dataChannelOptions = {
           ordered: false, //no guaranteed delivery, unreliable but faster
           maxRetransmitTime: 1000, //milliseconds
-          negotiated: true,
-          id: 0,
+          //negotiated: true,
+          //id: 5,
   };
 
-  dataChannel = peerConnection.createDataChannel("data", dataChannelOptions);
-  dataChannel.onopen = () => {
-    console.log("dataChannel.onopen");
-  };
-  dataChannel.onmessage = event => {
-    console.log(event);
-  };
-  dataChannel.onclose = () => {
-    console.log("dataChannel.onclose");
-  };
+/*
+      dataChannel = peerConnection.createDataChannel("data", dataChannelOptions);
+      dataChannel.onopen = () => {
+        console.log("dataChannel.onopen");
+      };
+      dataChannel.onmessage = event => {
+        console.log(event);
+      };
+      dataChannel.onclose = () => {
+        console.log("dataChannel.onclose");
+      };
+*/
 
-  /*
 
   peerConnection.ondatachannel = event => {
     // console.log("ondatachannel", event);
@@ -125,7 +126,7 @@ function startWebRTC(isOfferer) {
     };
   };
 
-  */
+  
 
   // 'onicecandidate' notifies us whenever an ICE agent needs to deliver a
   // message to the other peer through the signaling server
@@ -174,24 +175,6 @@ function startWebRTC(isOfferer) {
 
     if (message.sdp) {
       console.log("remoteDescription", message.sdp);
-
-      peerConnection.ondatachannel = event => {
-        // console.log("ondatachannel", event);
-        event.channel.onopen = () => {
-          console.log("dataChannel.onopen");
-        };
-        event.channel.onmessage = event => {
-          let message = JSON.parse(event.data);
-          if(message.stick) {
-            let linear = -message.stick[1];
-            let angular = -message.stick[0];
-            console.log("robot: linear=" + linear + " angular=" + angular);
-          }
-        };
-        event.channel.onclose = () => {
-          console.log("dataChannel.onclose");
-        };
-      };
 
       // This is called after receiving an offer or answer from another peer
       peerConnection.setRemoteDescription(new RTCSessionDescription(message.sdp), () => {
