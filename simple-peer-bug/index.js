@@ -26,7 +26,6 @@ drone.on('open', error => {
     return console.error(error);
   }
 });
-
 let droneRoomName = 'observable-' + roomName;
 let isOfferer = false;
 
@@ -37,6 +36,7 @@ $(()=>{
 
   room.on('members', members => {
     console.log('room.members', members);
+    // we are the offerer if we are the 2nd person in the room
     isOfferer = members.length === 2;
     startPeer();
   });
@@ -53,6 +53,7 @@ function startPeer() {
           trickle: false
   });
 
+  // signal (incoming)
   room.on('data', (data, client) => {
     if (client.id === drone.clientId) {
       return;
@@ -61,6 +62,7 @@ function startPeer() {
     p.signal(data);
   });
 
+  // signal (outgoing)
   p.on('signal', data=> {
       console.log("peer.signal -> ", data);
       drone.publish({
@@ -69,6 +71,10 @@ function startPeer() {
       });
   });
 
+  // if the connection gets closed,
+  // destroy the Peer object and re-instantiate it so
+  // we are ready for a new connection
+
   p.on('close', data=> {
     console.log("peer.close");
     clearInterval(interval);
@@ -76,11 +82,14 @@ function startPeer() {
     startPeer();
   });
 
+
+  // received data
   p.on('data', data=> {
     let message = new TextDecoder("utf-8").decode(data);
     console.log("received: " + message);
   });
 
+  // send hello world every 1 second
   interval = setInterval(() => {
     if(!p.connected) return;
     let message = "hello world " + Math.random();
