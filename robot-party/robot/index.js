@@ -89,11 +89,11 @@ function startWebRTC(isOfferer) {
   var dataChannelOptions = {
           ordered: false, //no guaranteed delivery, unreliable but faster
           maxRetransmitTime: 1000, //milliseconds
-          //negotiated: true,
-          //id: 5,
+          negotiated: true,
+          id: 5,
   };
 
-/*
+
       dataChannel = peerConnection.createDataChannel("data", dataChannelOptions);
       dataChannel.onopen = () => {
         console.log("dataChannel.onopen");
@@ -104,9 +104,10 @@ function startWebRTC(isOfferer) {
       dataChannel.onclose = () => {
         console.log("dataChannel.onclose");
       };
-*/
 
 
+
+/*
   peerConnection.ondatachannel = event => {
     // console.log("ondatachannel", event);
     event.channel.onopen = () => {
@@ -125,8 +126,8 @@ function startWebRTC(isOfferer) {
       console.log("dataChannel.onclose");
     };
   };
+*/
 
-  
 
   // 'onicecandidate' notifies us whenever an ICE agent needs to deliver a
   // message to the other peer through the signaling server
@@ -153,6 +154,13 @@ function startWebRTC(isOfferer) {
       remoteVideo.srcObject = stream;
     }
     $("#panelLocalVideo").fadeOut();
+  };
+
+  peerConnection.onconnectionstatechange = event => {
+    if(peerConnection.connectionState==="failed") {
+      peerConnection.close();
+      startWebRTC(isOfferer);
+    }
   };
 
   navigator.mediaDevices.getUserMedia({

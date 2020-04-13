@@ -27,6 +27,7 @@ drone.on('open', error => {
 });
 
 let droneRoomName = "";
+let isOfferer;
 
 function verifyAuth(passCode, onSuccess, onFailure) {
   droneRoomName = 'observable-' + hash(roomName + "-" + passCode);
@@ -41,7 +42,7 @@ function verifyAuth(passCode, onSuccess, onFailure) {
   room.on('members', members => {
     console.log('MEMBERS', members);
     // If we are the second user to connect to the room we will be creating the offer
-    const isOfferer = members.length === 2;
+    isOfferer = members.length === 2;
 
     if(isOfferer) {
       onSuccess();
@@ -72,8 +73,8 @@ function startWebRTC(isOfferer) {
   var dataChannelOptions = {
           ordered: false, //no guaranteed delivery, unreliable but faster
           maxRetransmitTime: 1000, //milliseconds
-          //negotiated: true,
-          //id: 5,
+          negotiated: true,
+          id: 5,
   };
 
       dataChannel = peerConnection.createDataChannel("data", dataChannelOptions);
@@ -100,9 +101,7 @@ function startWebRTC(isOfferer) {
   if (isOfferer) {
     peerConnection.onnegotiationneeded = () => {
       console.log("onnegotiationneeded");
-      setTimeout(()=> {
-        peerConnection.createOffer().then(localDescCreated).catch(onError);
-      }, 1000);
+      peerConnection.createOffer().then(localDescCreated).catch(onError);
     }
   }
 
@@ -115,7 +114,7 @@ function startWebRTC(isOfferer) {
     }
   };
 
-  navigator.mediaDevices.getUserMedia({
+  /* navigator.mediaDevices.getUserMedia({
     audio: true,
     video: true,
   }).then(stream => {
@@ -124,7 +123,9 @@ function startWebRTC(isOfferer) {
     // Add your stream to be sent to the conneting peer
     stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
 
-  }, onError);
+  }, onError); */
+
+  stream.getTracks().forEach(track => peerConnection.addTrack(track, stream));
 
   // Listen to signaling data from Scaledrone
   room.on('data', (message, client) => {
