@@ -1,12 +1,24 @@
+function randomId(length) {
+   var result           = '';
+   var characters       = 'abcdefghijklmnpoqrstuvwxyz';
+   var charactersLength = characters.length;
+   for ( var i = 0; i < length; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+   }
+   return result;
+}
+
 // Generate random room name if needed
 if (!location.hash) {
-  location.hash = makeid(6);
+  location.hash = randomId(6);
 }
+
+window.onhashchange = function() {
+    window.location.reload();
+}
+
 let roomName = location.hash.substring(1);
 console.log("roomName = " + roomName);
-
-let robotId = window.localStorage.getItem("robotId") || -1;
-let passCode = window.localStorage.getItem("passCode") || "";
 
 const drone = new ScaleDrone('yiS12Ts5RdNhebyM');
 drone.on('open', error => {
@@ -15,7 +27,7 @@ drone.on('open', error => {
   }
 });
 
-let droneRoomName = 'observable-' + hash(roomName + "-" + passCode);
+let droneRoomName = 'observable-' + roomName;
 let isOfferer = false;
 
 $(()=>{
@@ -25,17 +37,19 @@ $(()=>{
 
   room.on('members', members => {
     console.log('room.members', members);
-    // If we are the second user to connect to the room we will be creating the offer
+    isOfferer = members.length === 2;
+    startPeer();
   });
-
-  startPeer();
 });
 
 let p;
+let interval;
 
 function startPeer() {
+  console.log("isOfferer = " + isOfferer);
+
   p = new SimplePeer({
-          initiator: false,
+          initiator: isOfferer,
           trickle: false
   });
 
@@ -57,11 +71,20 @@ function startPeer() {
 
   p.on('close', data=> {
     console.log("peer.close");
+    clearInterval(interval);
     p.destroy();
     startPeer();
   });
 
   p.on('data', data=> {
-    console.log(data);
+    let message = new TextDecoder("utf-8").decode(data);
+    console.log("received: " + message);
   });
+
+  interval = setInterval(() => {
+    if(!p.connected) return;
+    let message = "hello world " + Math.random();
+    console.log("sending: " + message);
+    p.send(message);
+  }, 1000);
 }
