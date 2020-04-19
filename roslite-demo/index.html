@@ -14,12 +14,13 @@
 <div id="gpsDisplay"></div>
 
 <script>
+
 // "rostopic echo /gps/fix"
 (()=>{
   let nh = ros.initNode("echo_gps");
+  let gpsDisplay = document.getElementById('gpsDisplay');
   let onData = (msg) => {
     console.log("recevied gps message:", msg);
-    print("Received GPS message:", "#0080cc");
     gpsDisplay.innerHTML = json2html(msg);
   };
   nh.subscribe("/gps/fix", "sensor_msgs/NavSatFix", onData);
@@ -28,9 +29,9 @@
 // "rostopic echo /imu/data"
 (()=>{
   let nh = ros.initNode("echo_imu");
+  let imuDisplay = document.getElementById('imuDisplay');
   let onData = (msg) => {
     console.log("recevied imu message:", msg);
-    print("Received IMU message:", "#0080cc");
     imuDisplay.innerHTML = json2html(msg);
   };
   nh.subscribe("/imu/data", "sensor_msgs/Imu", onData);
