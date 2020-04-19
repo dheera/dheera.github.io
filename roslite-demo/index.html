@@ -2,6 +2,7 @@
 <html>
 <head>
 <title>Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <link rel="stylesheet" type="text/css" href="index.css"/>
   <script type="text/javascript" src="roslite.bundle.js"></script>
   <script type="text/javascript" src="imuNode.js"></script>
@@ -9,7 +10,8 @@
 </head>
 <body>
 
-<div id="console"></div>
+<div id="imuDisplay"></div>
+<div id="gpsDisplay"></div>
 
 <script>
 // "rostopic echo /gps/fix"
@@ -18,7 +20,7 @@
   let onData = (msg) => {
     console.log("recevied gps message:", msg);
     print("Received GPS message:", "#0080cc");
-    print(json2html(msg));
+    gpsDisplay.innerHTML = json2html(msg);
   };
   nh.subscribe("/gps/fix", "sensor_msgs/NavSatFix", onData);
 })();
@@ -29,22 +31,13 @@
   let onData = (msg) => {
     console.log("recevied imu message:", msg);
     print("Received IMU message:", "#0080cc");
-    print(json2html(msg));
+    imuDisplay.innerHTML = json2html(msg);
   };
   nh.subscribe("/imu/data", "sensor_msgs/Imu", onData);
 })();
 
 let json2html = function(msg) {
     return JSON.stringify(msg, null, 2).replace(/\n/sg, "<br>").replace(/ /sg, "&nbsp;");
-}
-
-let print = function(text, color) {
-  if(!color) color = "#ffffff";
-  let html = '<span style="color:' + color + '">' + text + '</span><br>';
-  let console = document.getElementById('console');
-  if(console.innerHTML.length > 1048576) console.innerHTML = "";
-  console.innerHTML += html;
-  console.scrollTop = console.scrollHeight;
 }
 
 </script>
