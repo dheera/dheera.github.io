@@ -16,6 +16,7 @@ body {
   background:#000000;
   color:#303030;
   font-family: monospace;
+  border-top:1px solid white;
 }
 
 #imuDisplay { top: 0%; color:#0080cc; }
