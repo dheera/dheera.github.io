@@ -18,6 +18,6 @@ body {
   font-family: monospace;
 }
 
-#imuDisplay { top: 0%; }
-#gpsDisplay { top: 50%; }
+#imuDisplay { top: 0%; color:#0080cc; }
+#gpsDisplay { top: 50%; color:#cc8000; }
 
