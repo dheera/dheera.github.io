@@ -19,12 +19,15 @@ let room;
 let peerConnection;
 let dataChannel;
 
-let socket = io("https://botparty.dheera.net/");
-
 let droneRoomName = "";
 let isOfferer;
+let socket;
 
 function connect(onSuccess, onFailure) {
+  console.log("connect");
+  socket = io("https://botparty.dheera.net/");
+
+  roomName = location.hash.substring(1);
   droneRoomName = hash(roomName);
 
   // We're connected to the room and received an array of 'members'
