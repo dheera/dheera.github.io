@@ -113,7 +113,6 @@
 
   .localVideoContainerLoggedIn {
     z-index:5001;
-    opacity:0.5 !important;
     position:fixed;
     top:10pt !important;
     left:10pt !important;
